@@ -1,3 +1,4 @@
+import sys
 import logging
 from laka import Laka, Param, Handler, HandlerFailed, HandlerOK
 from laka.errors import ValidateParamsFailedError, HandlerNotFound, InvalidHandler, \
@@ -50,7 +51,7 @@ if __name__ == "__main__":
         laka.register(CreateUserHandler)
     except InvalidHandler as e:
         logging.error(e)
-        exit(1)
+        sys.exit(1)
     try:
         for cmd in laka.accept_request():
             try:

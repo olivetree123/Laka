@@ -11,6 +11,7 @@ pip install laka
 
 Server 端:
 ``` python
+import sys
 import logging
 from laka import Laka, Param, Handler, HandlerFailed, HandlerOK
 from laka.errors import ValidateParamsFailedError, HandlerNotFound, InvalidHandler, \
@@ -63,7 +64,7 @@ if __name__ == "__main__":
         laka.register(CreateUserHandler)
     except InvalidHandler as e:
         logging.error(e)
-        exit(1)
+        sys.exit(1)
     try:
         for cmd in laka.accept_request():
             try:
@@ -91,6 +92,7 @@ if __name__ == "__main__":
 
 Client 端:
 ``` python
+import sys
 from laka import Laka
 from laka.errors import MakeResponseError
 
@@ -104,6 +106,6 @@ if __name__ == "__main__":
         response = laka.accept_response(request_id)
     except MakeResponseError as e:
         print(e)
-        exit(1)
+        sys.exit(1)
     print(response.json())
 ```

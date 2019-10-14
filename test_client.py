@@ -1,3 +1,4 @@
+import sys
 from laka import Laka
 from laka.errors import MakeResponseError
 
@@ -11,5 +12,5 @@ if __name__ == "__main__":
         response = laka.accept_response(request_id)
     except MakeResponseError as e:
         print(e)
-        exit(1)
+        sys.exit(1)
     print(response.json())
