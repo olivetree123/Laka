@@ -1,9 +1,11 @@
+from .errors import MakeCommandError
+
 
 class Command(object):
 
     def __init__(self, code, params, request_id):
         if not isinstance(params, dict):
-            raise Exception("Invalid params type, dict is expected, but {} found".format(type(params)))
+            raise TypeError("Invalid params type, dict is expected but {} found".format(type(params)))
         self.code = code
         self.params = params
         self.request_id = request_id
@@ -21,17 +23,12 @@ class Command(object):
         }
         """
         if not isinstance(data, dict):
-            raise Exception("Invalid data type, dict is expected, but {} found".format(type(data)))
+            raise MakeCommandError("Invalid data type, dict is expected, but {} found".format(type(data)))
         if "code" not in data:
-            raise Exception("Invalid data, code is expected but not found.")
+            raise MakeCommandError("Invalid data, code is not found in data.")
         if "params" not in data:
-            raise Exception("Invalid data, params is expected but not found.")
+            raise MakeCommandError("Invalid data, params is not found in data.")
         return cls(data["code"], data["params"], data["request_id"])
     
     def json(self):
-        r = {
-            "code": self.code,
-            "params": self.params,
-            "request_id": self.request_id,
-        }
-        return r
+        return self.__dict__

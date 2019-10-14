@@ -1,17 +1,12 @@
-#! /usr/bin/python3
-
-"""
-基于 redis 队列 的 rpc 框架
-"""
-
 import uuid
 import json
 import redis
-import logging
 
+from .param import Param
 from .command import Command
 from .response import Response
-
+from .handler import Handler, HandlerOK, HandlerFailed
+from .errors import InvalidHandler, HandlerNotFound, InvalidMessage
 
 
 class Laka(object):
@@ -26,22 +21,32 @@ class Laka(object):
         self.request_queue = redis_queue
         self.redis_client = None
         if response_message and not isinstance(response_message, dict):
-            raise Exception("Invalid type of response_message, dict is expected but {} found".format(type(response_message)))
+            raise TypeError("Invalid type of response_message, dict is expected but {} found".format(type(response_message)))
         self._connect_redis()
         self.response_message = response_message if response_message else {}
-    
-    # def add_response_message(data):
-    #     if not isinstance(data, dict):
-    #         raise Exception("Invalid type, dict is expected but {} found".format(type(data)))
-    #     self.response_message = data
-    
-    # def get_message(self, resp_code):
-    #     return self.response_message[resp_code]
+        self.handlers = {}
 
     def _connect_redis(self):
         self.redis_client = redis.Redis(host=self.redis_host, port=self.redis_port, db=self.redis_db)
+    
+    def register(self, handler):
+        if not issubclass(handler, Handler):
+            raise InvalidHandler("handler should be subclass of Handler, but {} found".format(handler))
+        if handler.CommandCode is None:
+            raise InvalidHandler("CommandCode of handler should not be None")
+        if handler.Param and not issubclass(handler.Param, Param):
+            raise InvalidHandler("handler.Param should be subclass of Param, but {} found".format(handler.Param))
+        self.handlers[handler.CommandCode] = handler
 
-    def send(self, code, data):
+    def handle(self, cmd):
+        handler = self.handlers.get(cmd.code)
+        if not handler:
+            raise HandlerNotFound("handler not found for CommandCode = {}".format(cmd.code))
+        h = handler()
+        h.get_param(cmd)
+        return handler.handle(cmd)
+
+    def request(self, code, data):
         request_id = self.new_request_id()
         cmd = Command(code, data, request_id)
         r = json.dumps(cmd.json())
@@ -53,7 +58,7 @@ class Laka(object):
         try:
             data = json.loads(str(d[1], encoding="utf8"))
         except Exception as e:
-            logging.error(e)
+            raise InvalidMessage(e)
             return None
         return data
     
@@ -62,50 +67,28 @@ class Laka(object):
             data = self._accept(self.request_queue)
             if not data:
                 continue
-            try:
-                cmd = Command.load_from_dict(data)
-            except Exception as e:
-                logging.error(e)
-                continue
+            cmd = Command.load_from_dict(data)
             yield cmd
         
     def accept_response(self, request_id):
         data = self._accept(request_id)
-        try:
-            response = Response.load_from_dict(data)
-        except Exception as e:
-            logging.error(e)
-            return None
-        message = self.response_message.get(response.code) if response.code != 0 else ""
-        response.set_message(message)
+        response = Response.load_from_dict(data)
         return response
 
-    
-    def response(self, request_id, code, data):
+    def response(self, request_id, handler_response):
         """
         由于发送返回数据时，需要知道 request_id，因此如果请求时数据格式不正确或者缺少 request_id，则该请求将得不到任何返回值。
         所以必须确保发送请求时数据格式正确。
         """
-        message = self.response_message.get(code) if code != 0 else ""
-        resp = Response(request_id, code, data)
-        resp.set_message(message)
-        data = json.dumps(resp.json())
+        if not isinstance(handler_response, (HandlerFailed, HandlerOK)):
+            raise MakeResponseError("the type of handler_response should be HandlerOK or HandlerFailed, but {} found".format(type(handler_response)))
+        message = self.response_message.get(handler_response.code)
+        resp = Response(request_id, handler_response.code, handler_response.data, message)
+        try:
+            data = json.dumps(resp.json())
+        except Exception as e:
+            raise MakeResponseError(e)
         self.redis_client.lpush(request_id, data)
 
-    def error_response(self, request_id, code):
-        self._response(request_id, code, None)
-    
-    def success_response(self, request_id, data):
-        self._response(request_id, 0, data)
-    
-    # def response(self, resp):
-    #     if not isinstance(resp, Response):
-    #         raise Exception("Invalid response, type Response is expected, but {} found".format(type(resp)))
-    #     if resp.code == 0:
-    #         self.success_response(resp.request_id, resp.data)
-    #     else:
-    #         self.error_response(resp.request_id, resp.code)
-
-
     def new_request_id(self):
-        return "KAKA:REQUEST_ID:"+uuid.uuid4().hex
+        return "LAKA:REQUEST_ID:{}".format(uuid.uuid4().hex)

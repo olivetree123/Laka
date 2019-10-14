@@ -1,16 +1,3 @@
-# Laka
-
-Laka 是为 Python 打造的基于 json 和 redis 的微服务框架。
-
-## Install
-``` shell
-pip install laka
-```
-
-## Tutorial
-
-Server 端:
-``` python
 import logging
 from laka import Laka, Param, Handler, HandlerFailed, HandlerOK
 from laka.errors import ValidateParamsFailedError, HandlerNotFound, InvalidHandler, \
@@ -86,24 +73,4 @@ if __name__ == "__main__":
         logging.error(e)
     except InvalidMessage as e:
         logging.error(e)
-```
 
-
-Client 端:
-``` python
-from laka import Laka
-from laka.errors import MakeResponseError
-
-
-CREATE_USER_COMMAND = 101
-
-if __name__ == "__main__":
-    laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request")
-    request_id = laka.request(CREATE_USER_COMMAND, {"username":"olivetree"})
-    try:
-        response = laka.accept_response(request_id)
-    except MakeResponseError as e:
-        print(e)
-        exit(1)
-    print(response.json())
-```
