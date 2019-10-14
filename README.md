@@ -7,8 +7,20 @@ Laka 是为 Python 打造的基于 json 和 redis 的微服务框架。
 Server 端:
 ``` python
 import logging
-from laka import Laka, Param
-from laka.response import Response, INVALID_PARAM, COMMAND_NOT_FOUND
+from laka import Laka, Param, Response
+
+
+# 返回码定义
+SUCCESS = 0                 # 成功
+COMMAND_NOT_FOUND = 1       # 未找到命令
+INVALID_PARAM = 10          # 参数错误
+
+# 返回码对应的提示信息
+RESPONSE_MESSAGE = {
+    SUCCESS: "",
+    INVALID_PARAM: "Invalid params",
+    COMMAND_NOT_FOUND: "Command not found.",
+}
 
 
 class CreateUserParam(Param):
