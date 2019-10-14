@@ -1,4 +1,4 @@
-from .errors import ValidateParamsFailedError
+from .errors import ValidateError
 
 class Param(object):
     
@@ -16,5 +16,11 @@ class Param(object):
             setattr(param, key, cmd.params.get(key))
         status = param.validate()
         if not status:
-            raise ValidateParamsFailedError("Invalid params.")
+            raise ValidateError("Invalid params.")
         return param
+
+    def json(self):
+        status = self.validate()
+        if not status:
+            raise ValidateError("Invalid params")
+        return self.__dict__

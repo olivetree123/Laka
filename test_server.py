@@ -1,26 +1,29 @@
 import sys
 import logging
 from laka import Laka, Param, Handler, HandlerFailed, HandlerOK
-from laka.errors import ValidateParamsFailedError, HandlerNotFound, InvalidHandler, \
-                        InvalidMessage, MakeCommandError, MakeResponseError
+from laka.errors import ValidateError, HandlerNotFound, InvalidHandler, \
+                        InvalidMessage, MakeCommandError, MakeResponseError, MakeHandlerResponseError
 
 
+# 定义命令
+COMMAND_CREATE_USER = 101
 
 # 返回码定义
 SUCCESS = 0                 # 成功
 COMMAND_NOT_FOUND = 1       # 未找到命令
 VALIDATE_PARAM_FAILED = 10  # 参数错误
-INTERNAL_ERROR = 500        # 服务器内部错误
+INTERNAL_SERVER_ERROR = 500        # 服务器内部错误
 
 # 返回码对应的提示信息
 RESPONSE_MESSAGE = {
     SUCCESS: "",
     COMMAND_NOT_FOUND: "Command not found.",
     VALIDATE_PARAM_FAILED: "Failed to validate params",
-    INTERNAL_ERROR: "Internal Server Error",
+    INTERNAL_SERVER_ERROR: "Internal Server Error",
 }
 
 HandlerOK.set_success_code(SUCCESS)
+
 
 # 参数
 class CreateUserParam(Param):
@@ -31,13 +34,16 @@ class CreateUserParam(Param):
         self.tel = None
     
     def validate(self):
+        """
+        接收到消息之后，会自动调用 validate 验证参数是否合法
+        """
         if not (self.account and self.password):
             return False
         return True
 
+
 # handler，用来处理请求
 class CreateUserHandler(Handler):
-    CommandCode = 101
     Param = CreateUserParam
 
     def handle(self):
@@ -48,7 +54,7 @@ class CreateUserHandler(Handler):
 if __name__ == "__main__":
     laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request", response_message=RESPONSE_MESSAGE)
     try:
-        laka.register(CreateUserHandler)
+        laka.register(COMMAND_CREATE_USER, CreateUserHandler)
     except InvalidHandler as e:
         logging.error(e)
         sys.exit(1)
@@ -56,12 +62,12 @@ if __name__ == "__main__":
         for cmd in laka.accept_request():
             try:
                 handler_response = laka.handle(cmd)
-            except ValidateParamsFailedError as e:
+            except ValidateError as e:
                 logging.error(e)
                 handler_response = HandlerFailed(VALIDATE_PARAM_FAILED)
-            except ResponseTypeError as e:
+            except MakeHandlerResponseError as e:
                 logging.error(e)
-                handler_response = HandlerFailed(INTERNAL_ERROR)
+                handler_response = HandlerFailed(INTERNAL_SERVER_ERROR)
             except HandlerNotFound as e:
                 logging.error(e)
                 handler_response = HandlerFailed(COMMAND_NOT_FOUND)

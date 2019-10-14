@@ -1,8 +1,7 @@
-from .errors import ResponseCodeError, ResponseTypeError
+from .errors import MakeHandlerResponseError
 
 
 class Handler(object):
-    CommandCode = None
     Param = None
 
     def __init__(self):
@@ -22,7 +21,7 @@ class HandlerFailed(HandlerResponse):
 
     def __init__(self, code):
         if code is None:
-            raise ResponseCodeError("response code should not be None")
+            raise MakeHandlerResponseError("response code should not be None")
         self.code = code
         self.data = None
 
@@ -32,9 +31,9 @@ class HandlerOK(HandlerResponse):
 
     def __init__(self, data):
         if self.code is None:
-            raise ResponseCodeError("response code should not be None")
+            raise MakeHandlerResponseError("response code should not be None")
         if data and not isinstance(data, dict):
-            raise ResponseTypeError("response type error, dict is expected but {} found".format(type(data)))
+            raise MakeHandlerResponseError("response type error, dict is expected but {} found".format(type(data)))
         self.data = data
     
     @classmethod

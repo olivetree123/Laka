@@ -14,10 +14,13 @@ Server 端:
 import sys
 import logging
 from laka import Laka, Param, Handler, HandlerFailed, HandlerOK
-from laka.errors import ValidateParamsFailedError, HandlerNotFound, InvalidHandler, \
+from laka.errors import ValidateError, HandlerNotFound, InvalidHandler, \
                         InvalidMessage, MakeCommandError, MakeResponseError
 
 
+
+# 定义命令
+COMMAND_CREATE_USER = 101
 
 # 返回码定义
 SUCCESS = 0                 # 成功
@@ -35,6 +38,7 @@ RESPONSE_MESSAGE = {
 
 HandlerOK.set_success_code(SUCCESS)
 
+
 # 参数
 class CreateUserParam(Param):
     
@@ -48,9 +52,9 @@ class CreateUserParam(Param):
             return False
         return True
 
+
 # handler，用来处理请求
 class CreateUserHandler(Handler):
-    CommandCode = 101
     Param = CreateUserParam
 
     def handle(self):
@@ -61,18 +65,20 @@ class CreateUserHandler(Handler):
 if __name__ == "__main__":
     laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request", response_message=RESPONSE_MESSAGE)
     try:
-        laka.register(CreateUserHandler)
+        # 注册路由
+        laka.register(COMMAND_CREATE_USER, CreateUserHandler)
     except InvalidHandler as e:
         logging.error(e)
         sys.exit(1)
     try:
+        # 开始监听请求
         for cmd in laka.accept_request():
             try:
                 handler_response = laka.handle(cmd)
-            except ValidateParamsFailedError as e:
+            except ValidateError as e:
                 logging.error(e)
                 handler_response = HandlerFailed(VALIDATE_PARAM_FAILED)
-            except ResponseTypeError as e:
+            except MakeHandlerResponseError as e:
                 logging.error(e)
                 handler_response = HandlerFailed(INTERNAL_ERROR)
             except HandlerNotFound as e:
@@ -93,19 +99,47 @@ if __name__ == "__main__":
 Client 端:
 ``` python
 import sys
-from laka import Laka
-from laka.errors import MakeResponseError
+import logging
+from laka import Laka, Param
+from laka.errors import MakeResponseError, MakeRequestError, MakeCommandError
 
 
-CREATE_USER_COMMAND = 101
+COMMAND_CREATE_USER = 101
+
+
+class CreateUserParam(Param):
+    
+    def __init__(self, account, password, tel=None):
+        self.account = account
+        self.password = password
+        self.tel = tel
+    
+    def validate(self):
+        """
+        发送请求之前，validate 会被自动调用
+        """
+        if not (self.account and self.password):
+            return False
+        return True
+
 
 if __name__ == "__main__":
     laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request")
-    request_id = laka.request(CREATE_USER_COMMAND, {"username":"olivetree"})
+    param = CreateUserParam("olivetree", "123456")
     try:
+        # 发送请求
+        request_id = laka.request(COMMAND_CREATE_USER, param)
+    except MakeCommandError as e:
+        logging.error(e)
+        sys.exit(1)
+    except MakeRequestError as e:
+        logging.error(e)
+        sys.exit(1)
+    try:
+        # 获取结果，会阻塞等待
         response = laka.accept_response(request_id)
     except MakeResponseError as e:
-        print(e)
+        logging.error(e)
         sys.exit(1)
-    print(response.json())
+    logging.info(response.json())
 ```
