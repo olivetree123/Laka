@@ -2,6 +2,11 @@
 
 Laka 是为 Python 打造的基于 json 和 redis 的微服务框架。
 
+## Install
+``` shell
+pip install laka
+```
+
 ## Tutorial
 
 Server 端:
@@ -31,6 +36,8 @@ class CreateUserParam(Param):
         self.username = None
     
     def validate(self):
+        if not self.username:
+            return False
         return True
 
     @classmethod
@@ -45,7 +52,7 @@ class CreateUserParam(Param):
     
 
 if __name__ == "__main__":
-    laka = Laka(redis_host="localhost", redis_port=6379, request_queue="laka_request", response_message=RESPONSE_MESSAGE)
+    laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request", response_message=RESPONSE_MESSAGE)
     for cmd in laka.accept_request():
         data, resp_code = None, COMMAND_NOT_FOUND
         if cmd.code == CreateUserParam.CommandCode:
@@ -63,7 +70,7 @@ from laka import Laka
 CREATE_USER_COMMAND = 101
 
 if __name__ == "__main__":
-    laka = Laka(redis_host="localhost", redis_port=6379, request_queue="laka_request")
+    laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request")
     request_id = laka.send(CREATE_USER_COMMAND, {"username":"olivetree"})
     response = laka.accept_response(request_id)
     print(response.json())

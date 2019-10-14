@@ -19,11 +19,11 @@ class Laka(object):
     Laka is a json rpc client, based on redis queue.
     """
 
-    def __init__(self, redis_host, redis_port, request_queue, response_message=None, redis_db=0):
+    def __init__(self, redis_host, redis_port, redis_queue, response_message=None, redis_db=0):
         self.redis_host = redis_host
         self.redis_port = redis_port
         self.redis_db = redis_db
-        self.request_queue = request_queue
+        self.request_queue = redis_queue
         self.redis_client = None
         if response_message and not isinstance(response_message, dict):
             raise Exception("Invalid type of response_message, dict is expected but {} found".format(type(response_message)))

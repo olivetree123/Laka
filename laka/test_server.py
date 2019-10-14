@@ -26,6 +26,8 @@ class CreateUserParam(Param):
         self.username = None
     
     def validate(self):
+        if not self.username:
+            return False
         return True
 
     @classmethod
