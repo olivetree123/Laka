@@ -12,7 +12,7 @@ services:
   - redis-server
 
 script:
-  - pytest -s test_unit.py
+  - pytest --cov=laka -s test_unit.py
 
 after_success:
   - codecov
