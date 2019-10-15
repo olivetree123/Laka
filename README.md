@@ -1,5 +1,5 @@
 # Laka
-![PyPI](https://img.shields.io/pypi/v/laka)  
+![PyPI](https://img.shields.io/pypi/v/laka)  [![codebeat badge](https://codebeat.co/badges/6952feeb-ed2b-4646-818c-e294dad5fe79)](https://codebeat.co/projects/github-com-olivetree123-laka-master)  
 Laka 是为 Python 打造的基于 json 和 redis 的微服务框架。
 
 ## Install
