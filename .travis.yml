@@ -4,9 +4,15 @@ python:
 
 install:
   - pip install -r requirements.txt
+  - pip install codecov
+  - pip install coverage
+  - pip install pytest-cov
 
 services:
   - redis-server
 
 script:
   - pytest -s test_unit.py
+
+after_success:
+  - codecov
