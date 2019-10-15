@@ -31,7 +31,7 @@ class HandlerOK(HandlerResponse):
 
     def __init__(self, data):
         if self.code is None:
-            raise MakeHandlerResponseError("response code should not be None")
+            raise MakeHandlerResponseError("you should call function HandlerOK.set_success_code to set success code")
         if data and not isinstance(data, dict):
             raise MakeHandlerResponseError("response type error, dict is expected but {} found".format(type(data)))
         self.data = data

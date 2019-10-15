@@ -1,3 +1,5 @@
 .DS_Store
 dist
 Laka.egg-info
+__pycache__
+.cache

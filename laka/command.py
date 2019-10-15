@@ -18,7 +18,8 @@ class Command(object):
         """
         命令格式
         {
-            "code": 100
+            "code": 100,
+            "request_id":"123",
             "params": {
                 "param1": data1,
                 "param2": data2,
