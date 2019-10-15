@@ -1,5 +1,5 @@
 # Laka
-
+![PyPI](https://img.shields.io/pypi/v/laka)
 Laka 是为 Python 打造的基于 json 和 redis 的微服务框架。
 
 ## Install
