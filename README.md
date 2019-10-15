@@ -1,6 +1,7 @@
 # Laka
 [![Build Status](https://travis-ci.org/olivetree123/Laka.svg?branch=master)](https://travis-ci.org/olivetree123/Laka)  [![codecov](https://codecov.io/gh/olivetree123/Laka/branch/master/graph/badge.svg)](https://codecov.io/gh/olivetree123/Laka)  ![PyPI](https://img.shields.io/pypi/v/laka?color=blue)  [![codebeat badge](https://codebeat.co/badges/6952feeb-ed2b-4646-818c-e294dad5fe79)](https://codebeat.co/projects/github-com-olivetree123-laka-master)  ![PyPI - License](https://img.shields.io/pypi/l/laka)  
-Laka 是为 Python 打造的基于 json 和 redis 的微服务框架。
+
+Laka is a microservice framework for Python, based on json and redis.
 
 ## Install
 ``` shell
