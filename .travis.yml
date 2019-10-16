@@ -12,7 +12,8 @@ install:
 
 before_script:
   # - mkdir /consul_data
-  - ./consul agent -dev -client="0.0.0.0"
+  - nohup ./consul agent -dev -client="0.0.0.0" &
+  - sleep 5
 
 services:
   - redis-server
