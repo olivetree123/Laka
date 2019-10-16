@@ -1,5 +1,5 @@
 # Laka
-[![Build Status](https://travis-ci.org/olivetree123/Laka.svg?branch=master)](https://travis-ci.org/olivetree123/Laka)  [![codecov](https://codecov.io/gh/olivetree123/Laka/branch/master/graph/badge.svg)](https://codecov.io/gh/olivetree123/Laka)  [![codebeat badge](https://codebeat.co/badges/6952feeb-ed2b-4646-818c-e294dad5fe79)](https://codebeat.co/projects/github-com-olivetree123-laka-master)  ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/laka)  ![PyPI](https://img.shields.io/pypi/v/laka?color=blue)  ![PyPI - License](https://img.shields.io/pypi/l/laka)  
+[![Build Status](https://travis-ci.org/olivetree123/Laka.svg?branch=master)](https://travis-ci.org/olivetree123/Laka)  [![codecov](https://codecov.io/gh/olivetree123/Laka/branch/master/graph/badge.svg)](https://codecov.io/gh/olivetree123/Laka)  [![Codacy Badge](https://api.codacy.com/project/badge/Grade/27a69db7d26b4642b77f292711c35022)](https://www.codacy.com/manual/olivetree123/Laka?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=olivetree123/Laka&amp;utm_campaign=Badge_Grade)  ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/laka)  ![PyPI](https://img.shields.io/pypi/v/laka?color=blue)  ![PyPI - License](https://img.shields.io/pypi/l/laka)  
 
 Laka is a microservice framework for Python, based on json and redis.
 
