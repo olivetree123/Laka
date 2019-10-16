@@ -1,5 +1,6 @@
 from .errors import ValidateError
 
+
 class Param(object):
     
     def __init__(self):

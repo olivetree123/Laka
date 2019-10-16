@@ -1,5 +1,5 @@
 import pytest
-from .laka.laka import Laka
+from .laka import LakaServer, LakaClient
 from .laka.param import Param
 from .laka.command import Command
 from .laka.handler import Handler, HandlerOK
@@ -7,10 +7,10 @@ from .laka.handler import Handler, HandlerOK
 
 class CreateUserParam(Param):
     
-    def __init__(self):
-        self.account = None
-        self.password = None
-        self.tel = None
+    def __init__(self, account=None, password=None, tel=None):
+        self.account = account
+        self.password = password
+        self.tel = tel
     
     def validate(self):
         """
@@ -30,10 +30,10 @@ class CreateUserHandler(Handler):
         return HandlerOK(user)
 
 
-CREATE_USER_COMMAND = 100
+COMMAND_CREATE_USER = 100
 
 cmd_dict = {
-    "code": CREATE_USER_COMMAND,
+    "code": COMMAND_CREATE_USER,
     "request_id":"123",
     "params": {
         "account": "data1",
@@ -45,13 +45,31 @@ class TestCase(object):
 
     def setup_class(self):
         print("开始执行测试用例")
-        self.laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request")
-        self.laka.register(CREATE_USER_COMMAND, CreateUserHandler)
-        HandlerOK.set_success_code(0)
-        self.cmd = None
-
+        self.create_server(self)
+        self.create_client(self)
+        
     def teardown_class(self):
         print("测试用例执行结束")
+    
+    def create_server(self):
+        self.laka_server = LakaServer(
+            service_name="lakaTest",
+            redis_host="localhost", 
+            redis_port=6379, 
+            redis_queue="laka_request", 
+            consul_host="localhost",
+            consul_port=8500,
+        )
+        self.laka_server.router(COMMAND_CREATE_USER, CreateUserHandler)
+        HandlerOK.set_success_code(0)
+        self.cmd = None
+    
+    def create_client(self):
+        self.laka_client = LakaClient(
+            service_name="lakaTest",
+            consul_host="localhost",
+            consul_port=8500,
+        )
 
     def setup(self):
         pass
@@ -62,17 +80,18 @@ class TestCase(object):
         # print("teardown：每个用例结束后都会执行")
 
     def test_request(self):
-        self.cmd = Command.load_from_dict(cmd_dict)
-        result = self.laka.handle(self.cmd)
-        self.laka.response(self.cmd.request_id, result)
-        self.response()
+        param = CreateUserParam("olivetree123", "123456")
+        request_id = self.laka_client.request(COMMAND_CREATE_USER, param)
+        data = self.laka_server._accept(self.laka_server.service.queue)
+        self.cmd = Command.load_from_dict(data)
+        result = self.laka_server.handle(self.cmd)
+        self.laka_server.response(request_id, result)
+        self.handle_response()
     
-    def response(self):
-        resp = self.laka.accept_response(self.cmd.request_id)
+    def handle_response(self):
+        resp = self.laka_client.accept_response(self.cmd.request_id)
         print(resp.json())
 
-
-    # def test_param(self):
 
 if __name__ == "__main__":
     pytest.main(["-s", "test_unit.py"])

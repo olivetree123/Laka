@@ -61,3 +61,16 @@ class MakeRequestError(Exception):
     """
     def __init__(self, message="make response error"):
         Exception.__init__(self, message)
+
+
+class ServiceNotFoundError(Exception):
+
+    def __init__(self, message="service not found"):
+        Exception.__init__(self, message)
+
+
+class RegisterServiceFailed(Exception):
+
+    def __init__(self, message="failed to register service"):
+        Exception.__init__(self, message)
+

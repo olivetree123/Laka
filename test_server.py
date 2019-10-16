@@ -1,6 +1,6 @@
 import sys
 import logging
-from laka import Laka, Param, Handler, HandlerFailed, HandlerOK
+from laka import LakaServer, Param, Handler, HandlerFailed, HandlerOK
 from laka.errors import ValidateError, HandlerNotFound, InvalidHandler, \
                         InvalidMessage, MakeCommandError, MakeResponseError, MakeHandlerResponseError
 
@@ -52,16 +52,25 @@ class CreateUserHandler(Handler):
     
 
 if __name__ == "__main__":
-    laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request", response_message=RESPONSE_MESSAGE)
+    laka_server = LakaServer(
+        service_name="lakaTest",
+        redis_host="localhost", 
+        redis_port=6379, 
+        redis_queue="laka_request", 
+        consul_host="class-test.h3c.com",
+        consul_port=8500,
+        response_message=RESPONSE_MESSAGE,
+    )
     try:
-        laka.register(COMMAND_CREATE_USER, CreateUserHandler)
+        laka_server.router(COMMAND_CREATE_USER, CreateUserHandler)
     except InvalidHandler as e:
         logging.error(e)
         sys.exit(1)
     try:
-        for cmd in laka.accept_request():
+        for cmd in laka_server.accept_request():
             try:
-                handler_response = laka.handle(cmd)
+                print("cmd = ", cmd.json())
+                handler_response = laka_server.handle(cmd)
             except ValidateError as e:
                 logging.error(e)
                 handler_response = HandlerFailed(VALIDATE_PARAM_FAILED)
@@ -72,7 +81,7 @@ if __name__ == "__main__":
                 logging.error(e)
                 handler_response = HandlerFailed(COMMAND_NOT_FOUND)
             try:
-                laka.response(cmd.request_id, handler_response)
+                laka_server.response(cmd.request_id, handler_response)
             except MakeResponseError as e:
                 logging.error(e)
                 break

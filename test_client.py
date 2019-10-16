@@ -1,6 +1,5 @@
 import sys
-import logging
-from laka import Laka, Param
+from laka import LakaClient, Param
 from laka.errors import MakeResponseError, MakeRequestError, MakeCommandError
 
 
@@ -24,19 +23,23 @@ class CreateUserParam(Param):
 
 
 if __name__ == "__main__":
-    laka = Laka(redis_host="localhost", redis_port=6379, redis_queue="laka_request")
+    laka_client = LakaClient(
+        service_name="lakaTest",
+        consul_host="class-test.h3c.com",
+        consul_port=8500,
+    )
     param = CreateUserParam("olivetree123", "123456")
     try:
-        request_id = laka.request(COMMAND_CREATE_USER, param)
+        request_id = laka_client.request(COMMAND_CREATE_USER, param)
     except MakeCommandError as e:
-        logging.error(e)
+        print(e)
         sys.exit(1)
     except MakeRequestError as e:
-        logging.error(e)
+        print(e)
         sys.exit(1)
     try:
-        response = laka.accept_response(request_id)
+        response = laka_client.accept_response(request_id)
     except MakeResponseError as e:
-        logging.error(e)
+        print(e)
         sys.exit(1)
-    logging.info(response.json())
+    print("response = ", response.json())

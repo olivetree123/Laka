@@ -3,10 +3,16 @@ python:
   - "3.6"
 
 install:
+  - wget https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
+  - unzip consul_1.6.1_linux_amd64.zip
   - pip install -r requirements.txt
   - pip install codecov
   - pip install coverage
   - pip install pytest-cov
+
+before_script:
+  # - mkdir /consul_data
+  - ./consul agent -dev -client="0.0.0.0"
 
 services:
   - redis-server
