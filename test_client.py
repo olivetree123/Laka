@@ -25,10 +25,10 @@ class CreateUserParam(Param):
 if __name__ == "__main__":
     laka_client = LakaClient(
         service_name="lakaTest",
-        consul_host="class-test.h3c.com",
+        consul_host="localhost",
         consul_port=8500,
     )
-    param = CreateUserParam("olivetree123", "123456")
+    param = CreateUserParam("olivetree", "123456")
     try:
         request_id = laka_client.request(COMMAND_CREATE_USER, param)
     except MakeCommandError as e:

@@ -57,7 +57,7 @@ if __name__ == "__main__":
         redis_host="localhost", 
         redis_port=6379, 
         redis_queue="laka_request", 
-        consul_host="class-test.h3c.com",
+        consul_host="localhost",
         consul_port=8500,
         response_message=RESPONSE_MESSAGE,
     )

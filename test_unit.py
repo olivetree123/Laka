@@ -80,7 +80,7 @@ class TestCase(object):
         # print("teardown：每个用例结束后都会执行")
 
     def test_request(self):
-        param = CreateUserParam("olivetree123", "123456")
+        param = CreateUserParam("olivetree", "123456")
         request_id = self.laka_client.request(COMMAND_CREATE_USER, param)
         data = self.laka_server._accept(self.laka_server.service.queue)
         self.cmd = Command.load_from_dict(data)
