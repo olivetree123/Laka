@@ -25,8 +25,8 @@ class CreateUserParam(Param):
 if __name__ == "__main__":
     laka_client = LakaClient(
         service_name="lakaTest",
-        consul_host="localhost",
-        consul_port=8500,
+        fofo_host="10.88.190.211",
+        fofo_port=6379,
     )
     param = CreateUserParam("olivetree", "123456")
     try:

@@ -2,22 +2,25 @@ import uuid
 import json
 import redis
 
+from .fofo import Fofo
 from .param import Param
-from .consul import Consul
 from .command import Command
 from .response import Response
+from .laka_service import LakaService
 from .errors import MakeRequestError, ServiceNotFoundError
 
 
 class LakaClient(object):
 
-    def __init__(self, service_name, consul_host, consul_port):
-        self.consul_host = consul_host
-        self.consul_port = consul_port
+    def __init__(self, service_name, fofo_host, fofo_port):
+        self.fofo_host = fofo_host
+        self.fofo_port = fofo_port
         self.redis_client = None
         self.service_name = service_name
-        self.consul = Consul(self.consul_host, self.consul_port)
-        self.service = self.consul.get_service(service_name)
+        self.fofo = Fofo(self.fofo_host, self.fofo_port)
+        self.service_list = self.fofo.search_service(name=service_name)
+        self.service = self.service_list[0] if self.service_list else None
+        self.service = LakaService.load_from_json(self.service)
         if not self.service:
             raise ServiceNotFoundError("service {} not found".format(service_name))
         self._connect_redis()

@@ -57,8 +57,9 @@ class TestCase(object):
             redis_host="localhost", 
             redis_port=6379, 
             redis_queue="laka_request", 
-            consul_host="localhost",
-            consul_port=8500,
+            fofo_host="10.88.190.211",
+            fofo_port=6379,
+            check_health=False,
         )
         self.laka_server.router(COMMAND_CREATE_USER, CreateUserHandler)
         HandlerOK.set_success_code(0)
@@ -67,8 +68,8 @@ class TestCase(object):
     def create_client(self):
         self.laka_client = LakaClient(
             service_name="lakaTest",
-            consul_host="localhost",
-            consul_port=8500,
+            fofo_host="10.88.190.211",
+            fofo_port=6379,
         )
 
     def setup(self):
@@ -83,7 +84,7 @@ class TestCase(object):
         param = CreateUserParam("olivetree", "123456")
         request_id = self.laka_client.request(COMMAND_CREATE_USER, param)
         data = self.laka_server._accept(self.laka_server.service.queue)
-        self.cmd = Command.load_from_dict(data)
+        self.cmd = Command.load_from_dict(data[1])
         result = self.laka_server.handle(self.cmd)
         self.laka_server.response(request_id, result)
         self.handle_response()

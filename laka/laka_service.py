@@ -1,3 +1,5 @@
+from .errors import MakeServiceError
+
 
 class LakaService(object):
 
@@ -10,18 +12,20 @@ class LakaService(object):
 
     @classmethod
     def load_from_json(cls, data):
+        if not data:
+            return None
         if not isinstance(data, dict):
             raise MakeServiceError("data type should be dict, but {} found".format(type(data)))
-        name = data.get("Service")
+        name = data.get("name")
         # host = data.get("Address")
         # port = data.get("Port")
-        meta = data.get("Meta")
-        if not isinstance(meta, dict):
-            raise MakeServiceError("meta type should be dict, but {} found".format(type(meta)))
-        queue = meta.get("queue")
-        redis_host = meta.get("redis_host")
-        redis_port = int(meta.get("redis_port"))
-        redis_db = int(meta.get("redis_db", 0))
+        extra = data.get("extra", {})
+        if not isinstance(extra, dict):
+            raise MakeServiceError("extra type should be dict, but {} found".format(type(extra)))
+        queue = extra.get("queue")
+        redis_host = extra.get("redis_host")
+        redis_port = int(extra.get("redis_port"))
+        redis_db = int(extra.get("redis_db", 0))
         if not name:
             raise MakeServiceError("name is necessary for service")
         if not redis_host:
@@ -34,15 +38,13 @@ class LakaService(object):
     
     def json(self):
         r = {
-            "Name": self.name,
-            # "Port": 0, 
-            "Meta": {
+            "name": self.name,
+            "extra": {
                 "redis_host": self.redis_host,
                 "redis_port": str(self.redis_port),
                 "redis_db": str(self.redis_db),
                 "queue": self.queue
             },
-            # "Address": "",
         }
         return r
         

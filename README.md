@@ -4,153 +4,112 @@
 Laka is a microservice framework for Python, based on json and redis.
 
 ## Install
-``` shell
-pip install laka
-```
+1. Step one
+Install Fofo
+2. Step two
+    ``` shell
+    pip install laka
+    ```
 
-## Tutorial
+## Feature
+  - Service Register and Discovery
+  - Transmit data with Json RPC
 
-Server 端:
-``` python
-import sys
-import logging
-from laka import LakaServer, Param, Handler, HandlerFailed, HandlerOK
-from laka.errors import ValidateError, HandlerNotFound, InvalidHandler, \
-                        InvalidMessage, MakeCommandError, MakeResponseError, MakeHandlerResponseError
+## Tutorial: Server
+1. Create Server and Register Service
+    ``` python
+    from laka import LakaServer
 
-
-# 定义命令
-COMMAND_CREATE_USER = 101
-
-# 返回码定义
-SUCCESS = 0                 # 成功
-COMMAND_NOT_FOUND = 1       # 未找到命令
-VALIDATE_PARAM_FAILED = 10  # 参数错误
-INTERNAL_SERVER_ERROR = 500        # 服务器内部错误
-
-# 返回码对应的提示信息
-RESPONSE_MESSAGE = {
-    SUCCESS: "",
-    COMMAND_NOT_FOUND: "Command not found.",
-    VALIDATE_PARAM_FAILED: "Failed to validate params",
-    INTERNAL_SERVER_ERROR: "Internal Server Error",
-}
-
-HandlerOK.set_success_code(SUCCESS)
-
-
-# 参数
-class CreateUserParam(Param):
-    
-    def __init__(self):
-        self.account = None
-        self.password = None
-        self.tel = None
-    
-    def validate(self):
-        """
-        接收到消息之后，会自动调用 validate 验证参数是否合法
-        """
-        if not (self.account and self.password):
-            return False
-        return True
-
-
-# handler，用来处理请求
-class CreateUserHandler(Handler):
-    Param = CreateUserParam
-
-    def handle(self):
-        user = {"password":self.param.password, "account":self.param.account}
-        return HandlerOK(user)
-    
-
-if __name__ == "__main__":
     laka_server = LakaServer(
-        service_name="lakaTest",
+        service_name="lakaTest",    # Register Service with this name
         redis_host="localhost", 
         redis_port=6379, 
         redis_queue="laka_request", 
-        consul_host="localhost",
-        consul_port=8500,
+        fofo_host="10.88.190.211",
+        fofo_port=6379,
         response_message=RESPONSE_MESSAGE,
+        check_health=True,
     )
-    try:
-        laka_server.router(COMMAND_CREATE_USER, CreateUserHandler)
-    except InvalidHandler as e:
-        logging.error(e)
-        sys.exit(1)
-    try:
-        for cmd in laka_server.accept_request():
-            try:
-                print("cmd = ", cmd.json())
-                handler_response = laka_server.handle(cmd)
-            except ValidateError as e:
-                logging.error(e)
-                handler_response = HandlerFailed(VALIDATE_PARAM_FAILED)
-            except MakeHandlerResponseError as e:
-                logging.error(e)
-                handler_response = HandlerFailed(INTERNAL_SERVER_ERROR)
-            except HandlerNotFound as e:
-                logging.error(e)
-                handler_response = HandlerFailed(COMMAND_NOT_FOUND)
-            try:
-                laka_server.response(cmd.request_id, handler_response)
-            except MakeResponseError as e:
-                logging.error(e)
-                break
-    except MakeCommandError as e:
-        logging.error(e)
-    except InvalidMessage as e:
-        logging.error(e)
-```
+    ```
+2. Define param for Handler
+    ``` python
+    from laka import Param
 
+    class CreateUserParam(Param):
+        def __init__(self):
+            self.account = None
+            self.password = None
+            self.tel = None
+        
+        def validate(self):
+            """
+            validate will be run automatically
+            you should not run validate by yourself
+            """
+            if not (self.account and self.password):
+                return False
+            return True
+    ```
+3. Define Handler
+    ``` python
+    from laka import Handler
 
-Client 端:
-``` python
-import sys
-from laka import LakaClient, Param
-from laka.errors import MakeResponseError, MakeRequestError, MakeCommandError
+    class CreateUserHandler(Handler):
+        Param = CreateUserParam
 
+        def handle(self):
+            user = {"password":self.param.password, "account":self.param.account}
+            return HandlerOK(user)
+    ```
+4. Add router
+    ``` python
+    # COMMAND_CREATE_USER = 101
+    laka_server.router(COMMAND_CREATE_USER, CreateUserHandler)
+    ```
+5. Accept & Handle request 
+    ``` python
+    for queue, cmd in laka_server.accept_request():
+        handler_response = laka_server.handle(cmd)
+    ```
+## Tutorial: Client
+1. Create Client
+    ``` python
+    from laka import LakaClient
 
-COMMAND_CREATE_USER = 101
-
-
-class CreateUserParam(Param):
-    
-    def __init__(self, account, password, tel=None):
-        self.account = account
-        self.password = password
-        self.tel = tel
-    
-    def validate(self):
-        """
-        发送请求之前，validate 会被自动调用
-        """
-        if not (self.account and self.password):
-            return False
-        return True
-
-
-if __name__ == "__main__":
     laka_client = LakaClient(
-        service_name="lakaTest",
-        consul_host="localhost",
-        consul_port=8500,
+        service_name="lakaTest",    # service_name is the service you want to connect to
+        fofo_host="10.88.190.211",
+        fofo_port=6379,
     )
-    param = CreateUserParam("olivetree123", "123456")
-    try:
-        request_id = laka_client.request(COMMAND_CREATE_USER, param)
-    except MakeCommandError as e:
-        print(e)
-        sys.exit(1)
-    except MakeRequestError as e:
-        print(e)
-        sys.exit(1)
-    try:
-        response = laka_client.accept_response(request_id)
-    except MakeResponseError as e:
-        print(e)
-        sys.exit(1)
+    ```
+2. Define & Create param 
+    ``` python
+    from laka import Param
+
+    class CreateUserParam(Param):
+        
+        def __init__(self, account, password, tel=None):
+            self.account = account
+            self.password = password
+            self.tel = tel
+        
+        def validate(self):
+            """
+            validate will be run in request automatically
+            you should not run validate by yourself
+            """
+            if not (self.account and self.password):
+                return False
+            return True
+
+    param = CreateUserParam("olivetree", "123456")
+    ```
+3. Send Request
+    ``` python
+    request_id = laka_client.request(COMMAND_CREATE_USER, param)
+    ```
+4. Get Response
+    ``` python
+    response = laka_client.accept_response(request_id)
     print("response = ", response.json())
-```
+    ```

@@ -57,9 +57,10 @@ if __name__ == "__main__":
         redis_host="localhost", 
         redis_port=6379, 
         redis_queue="laka_request", 
-        consul_host="localhost",
-        consul_port=8500,
+        fofo_host="10.88.190.211",
+        fofo_port=6379,
         response_message=RESPONSE_MESSAGE,
+        check_health=True,
     )
     try:
         laka_server.router(COMMAND_CREATE_USER, CreateUserHandler)
@@ -67,7 +68,7 @@ if __name__ == "__main__":
         logging.error(e)
         sys.exit(1)
     try:
-        for cmd in laka_server.accept_request():
+        for queue, cmd in laka_server.accept_request():
             try:
                 print("cmd = ", cmd.json())
                 handler_response = laka_server.handle(cmd)

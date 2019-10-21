@@ -2,8 +2,8 @@ import uuid
 import json
 import redis
 
+from .fofo import Fofo
 from .param import Param
-from .consul import Consul
 from .command import Command
 from .response import Response
 from .laka_service import LakaService
@@ -13,10 +13,10 @@ from .errors import InvalidHandler, HandlerNotFound, InvalidMessage, MakeRequest
 
 class LakaServer(object):
 
-    def __init__(self, service_name, redis_host, redis_port, redis_queue, consul_host, consul_port, response_message=None, redis_db=0):
+    def __init__(self, service_name, redis_host, redis_port, redis_queue, fofo_host, fofo_port, response_message=None, redis_db=0, check_health=False):
         self.service_name = service_name
-        self.consul_host = consul_host
-        self.consul_port = consul_port
+        self.fofo_host = fofo_host
+        self.fofo_port = fofo_port
         self.redis_client = None
         if response_message and not isinstance(response_message, dict):
             raise TypeError("Invalid type of response_message, dict is expected but {} found".format(type(response_message)))
@@ -24,8 +24,10 @@ class LakaServer(object):
         self.service = LakaService(service_name, redis_host, redis_port, redis_queue, redis_db)
         self.handlers = {}
         self._connect_redis()
-        self.consul = Consul(self.consul_host, self.consul_port)
-        self.consul.register_service(self.service)
+        self.fofo = Fofo(self.fofo_host, self.fofo_port)
+        self.fofo.register_service(self.service)
+        if check_health:
+            self.fofo.health_check()
 
     def _connect_redis(self):
         self.redis_client = redis.Redis(host=self.service.redis_host, port=self.service.redis_port, db=self.service.redis_db)
@@ -51,15 +53,15 @@ class LakaServer(object):
             data = json.loads(str(d[1], encoding="utf8"))
         except Exception as e:
             raise InvalidMessage(e)
-        return data
+        return str(d[0]), data
     
     def accept_request(self):
         while True:
-            data = self._accept(self.service.queue)
+            queue, data = self._accept(self.service.queue)
             if not data:
                 continue
             cmd = Command.load_from_dict(data)
-            yield cmd
+            yield queue, cmd
 
     def response(self, request_id, handler_response):
         """
@@ -75,3 +77,8 @@ class LakaServer(object):
         except Exception as e:
             raise MakeResponseError(e)
         self.redis_client.lpush(request_id, data)
+    
+    # @staticmethod
+    # def get_heartbeat_queue(service_name):
+    #     return "LAKA:HEARTBEAT:{}".format(service_name)
+

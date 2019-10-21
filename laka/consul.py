@@ -1,3 +1,4 @@
+"""
 from winney import Winney
 from .laka_service import LakaService
 from .errors import RegisterServiceFailed
@@ -14,11 +15,13 @@ class Consul(object):
         self.winney.add_url(method="GET", uri="/v1/agent/service/{NAME}", function_name="get_service")
         self.winney.add_url(method="PUT", uri="/v1/agent/service/register", function_name="register_service")
 
-    def list_service(self):
+    def list_service(self, name):
         rs = self.winney.list_service()
         service_list = []
-        for r in rs.get_json():
-            service_list.append(LakaService.load_from_json(r))
+        for _, value in rs.get_json().items():
+            if value["Service"] != name:
+                continue
+            service_list.append(LakaService.load_from_json(value))
         return service_list
     
     def get_service(self, name):
@@ -34,4 +37,4 @@ class Consul(object):
         service = self.get_service(service.name)
         if not service:
             raise RegisterServiceFailed("failed to register service: {}".format(service.name))
-        
+"""

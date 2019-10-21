@@ -11,8 +11,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name = "Laka",
-    version = "0.1.6",
-    author = "Gaojian",
+    version = "0.3",
+    author = "olivetree",
     license = "MIT",
     packages = ["laka"],
     author_email = "olivetree123@163.com",
@@ -22,6 +22,8 @@ setup(
     long_description_content_type = "text/markdown",
     install_requires = [
         "redis",
+        "winney",
+        "requests",
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
