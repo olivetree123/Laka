@@ -4,7 +4,7 @@
 Laka is a microservice framework for Python, based on json and redis.
 
 ## Install
-1. Step one
+1. Step one  
 Install Fofo
 2. Step two
     ``` shell
@@ -104,12 +104,10 @@ Install Fofo
 
     param = CreateUserParam("olivetree", "123456")
     ```
-3. Send Request
+3. Send Request & Get Response
     ``` python
+    # COMMAND_CREATE_USER = 101
     request_id = laka_client.request(COMMAND_CREATE_USER, param)
-    ```
-4. Get Response
-    ``` python
     response = laka_client.accept_response(request_id)
     print("response = ", response.json())
     ```

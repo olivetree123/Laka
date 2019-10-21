@@ -3,8 +3,9 @@ python:
   - "3.6"
 
 install:
-  - wget https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
-  - unzip consul_1.6.1_linux_amd64.zip
+  - mkdir /etc/fofo
+  - wget https://olivetree.oss-cn-hangzhou.aliyuncs.com/fofo && chmod +x fofo
+  - wget https://olivetree.oss-cn-hangzhou.aliyuncs.com/config.toml -O /etc/fofo/config.toml
   - pip install -r requirements.txt
   - pip install codecov
   - pip install coverage
@@ -12,7 +13,7 @@ install:
 
 before_script:
   # - mkdir /consul_data
-  - nohup ./consul agent -dev -client="0.0.0.0" &
+  - nohup ./fofo &
   - sleep 5
 
 services:
