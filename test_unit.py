@@ -57,7 +57,7 @@ class TestCase(object):
             redis_host="localhost", 
             redis_port=6379, 
             redis_queue="laka_request", 
-            fofo_host="10.88.190.211",
+            fofo_host="localhost",
             fofo_port=6379,
             check_health=False,
         )
@@ -68,7 +68,7 @@ class TestCase(object):
     def create_client(self):
         self.laka_client = LakaClient(
             service_name="lakaTest",
-            fofo_host="10.88.190.211",
+            fofo_host="localhost",
             fofo_port=6379,
         )
 
