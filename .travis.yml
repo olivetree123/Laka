@@ -5,7 +5,7 @@ python:
 install:
   - sudo mkdir /etc/fofo
   - wget https://olivetree.oss-cn-hangzhou.aliyuncs.com/fofo && chmod +x fofo
-  - wget https://olivetree.oss-cn-hangzhou.aliyuncs.com/config.toml -O /etc/fofo/config.toml
+  - sudo wget https://olivetree.oss-cn-hangzhou.aliyuncs.com/config.toml -O /etc/fofo/config.toml
   - pip install -r requirements.txt
   - pip install codecov
   - pip install coverage
